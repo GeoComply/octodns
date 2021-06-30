@@ -16,3 +16,5 @@ octodns.egg-info/
 output/
 tests/zones/unit.tests.
 tmp/
+.idea/
+.DS_Store
