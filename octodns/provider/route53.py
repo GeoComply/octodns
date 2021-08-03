@@ -720,6 +720,8 @@ class Route53Provider(BaseProvider):
             'values': [v['Value'] for v in rrset['ResourceRecords']],
             'ttl': int(rrset['TTL'])
         }
+        if 'Weight' in rrset:
+            ret['weight'] = rrset['Weight']
         geo = self._parse_geo(rrset)
         if geo:
             ret['geo'] = geo
@@ -981,14 +983,22 @@ class Route53Provider(BaseProvider):
                     if len(data) > 1:
                         # Multiple data indicates a record with GeoDNS, convert
                         # them data into the format we need
-                        geo = {}
-                        for d in data:
-                            try:
-                                geo[d['geo']] = d['values']
-                            except KeyError:
-                                primary = d
-                        data = primary
-                        data['geo'] = geo
+                        if _type == "A" and "weight" in data[0]:
+                            values = []
+                            for d in data:
+                                if d['weight'] != 0:
+                                    values = values + d['values']
+                            data = data[0]
+                            data['values'] = values
+                        else:
+                            geo = {}
+                            for d in data:
+                                try:
+                                    geo[d['geo']] = d['values']
+                                except KeyError:
+                                    primary = d
+                            data = primary
+                            data['geo'] = geo
                     else:
                         data = data[0]
                     record = Record.new(zone, name, data, source=self,
