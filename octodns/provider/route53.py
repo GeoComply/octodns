@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function, \
     unicode_literals
 
+import fqdn
 from boto3 import client
 from botocore.config import Config
 from collections import defaultdict
@@ -746,9 +747,10 @@ class Route53Provider(BaseProvider):
         }
 
     def _data_for_single(self, rrset):
+        data = fqdn.FQDN(rrset['ResourceRecords'][0]['Value'])
         return {
             'type': rrset['Type'],
-            'value': rrset['ResourceRecords'][0]['Value'],
+            'value': data.absolute,
             'ttl': int(rrset['TTL'])
         }
 
@@ -815,11 +817,12 @@ class Route53Provider(BaseProvider):
         values = []
         for rr in rrset['ResourceRecords']:
             priority, weight, port, target = rr['Value'].split()
+            data = fqdn.FQDN(target)
             values.append({
                 'priority': priority,
                 'weight': weight,
                 'port': port,
-                'target': target,
+                'target': data.absolute,
             })
         return {
             'type': rrset['Type'],
