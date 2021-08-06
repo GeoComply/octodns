@@ -747,7 +747,7 @@ class Route53Provider(BaseProvider):
         }
 
     def _data_for_single(self, rrset):
-        data = fqdn.FQDN(rrset['ResourceRecords'][0]['Value'])
+        data = fqdn.FQDN(rrset['ResourceRecords'][0]['Value'], allow_underscores=True)
         return {
             'type': rrset['Type'],
             'value': data.absolute,
@@ -817,7 +817,7 @@ class Route53Provider(BaseProvider):
         values = []
         for rr in rrset['ResourceRecords']:
             priority, weight, port, target = rr['Value'].split()
-            data = fqdn.FQDN(target)
+            data = fqdn.FQDN(target, allow_underscores=True)
             values.append({
                 'priority': priority,
                 'weight': weight,
